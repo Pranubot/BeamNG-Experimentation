@@ -1,0 +1,77 @@
+# nuScenes-matching 6-camera rig + roof LiDAR 
+# Camera names map to nuScenes channels (CAM_FRONT, CAM_FRONT_LEFT, ...) on export.
+# Sensor mounts are in BeamNG vehicle space: +X left, -Y forward, +Z up.
+
+beamng:
+  home: "C:/Users/yadav/OneDrive/Pictures/Documents/BeamNG.tech.v0.38.3.0"
+  user: null
+  host: localhost
+  port: 25252
+  launch: true
+
+scenario:
+  level: west_coast_usa
+  name: harness_6cam
+  vehicle_model: etk800
+  spawn:
+    pos: [-717.121, 101.0, 118.675]
+    rot_quat: [0.0, 0.0, 0.3826834, 0.9238795]
+  traffic: 6
+  ai_mode: span
+  ai_speed_kph: 40
+
+rig:
+  shared_memory: true
+  cameras:
+    - name: cam_front
+      pos: [0.0, -1.2, 1.5]
+      dir: [0.0, -1.0, 0.0]          # 0 deg
+      resolution: [1600, 900]
+      fov_y_deg: 65
+      render_depth: true
+    - name: cam_front_left
+      pos: [0.6, -0.8, 1.5]
+      dir: [0.8192, -0.5736, 0.0]    # +55 deg
+      resolution: [1600, 900]
+      fov_y_deg: 65
+      render_depth: true
+    - name: cam_front_right
+      pos: [-0.6, -0.8, 1.5]
+      dir: [-0.8192, -0.5736, 0.0]   # -55 deg
+      resolution: [1600, 900]
+      fov_y_deg: 65
+      render_depth: true
+    - name: cam_back
+      pos: [0.0, 1.8, 1.5]
+      dir: [0.0, 1.0, 0.0]           # 180 deg
+      resolution: [1600, 900]
+      fov_y_deg: 65
+      render_depth: true
+    - name: cam_back_left
+      pos: [0.6, 0.6, 1.5]
+      dir: [0.9397, 0.3420, 0.0]     # +110 deg
+      resolution: [1600, 900]
+      fov_y_deg: 65
+      render_depth: true
+    - name: cam_back_right
+      pos: [-0.6, 0.6, 1.5]
+      dir: [-0.9397, 0.3420, 0.0]    # -110 deg
+      resolution: [1600, 900]
+      fov_y_deg: 65
+      render_depth: true
+  lidar:
+    name: lidar_top
+    pos: [0.0, -0.3, 1.9]
+    vertical_resolution: 64
+    vertical_angle: 26.9
+    frequency: 20
+    max_distance: 120
+    is_360_mode: true
+
+capture:
+  hz: 10
+  steps_per_second: 60
+  num_frames: 200
+  warmup_seconds: 3.0
+  output_dir: data/sessions
+  session_name: null

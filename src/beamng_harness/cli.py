@@ -67,6 +67,31 @@ def cmd_replay(args) -> int:
     return 0
 
 
+def cmd_live(args) -> int:
+    from .config import load_config
+    from .rig import SensorRig
+    from .session import HarnessSession
+    from .viz.live import live_view
+
+    cfg = load_config(args.config)
+    if cfg.rig.lidar is None:
+        print("error: live view requires a 'lidar' block in the rig config")
+        return 1
+    if not args.ai:
+        cfg.scenario.ai_mode = "manual"  # you drive; --ai hands it to BeamNG's built-in AI
+    if args.traffic is not None:
+        cfg.scenario.traffic = args.traffic  # override the config's traffic count
+
+    with HarnessSession(cfg) as session:
+        session.setup_scenario(deterministic=False)  # real-time, not stepped
+        rig = SensorRig(cfg, session).attach(cameras=False)  # LiDAR only
+        try:
+            live_view(session, rig, hz=args.hz, view_range=args.range, max_seconds=args.seconds)
+        finally:
+            rig.detach()
+    return 0
+
+
 def cmd_doctor(args) -> int:
     """Sanity-check the environment without recording anything."""
     import importlib
@@ -129,6 +154,16 @@ def main(argv=None) -> int:
     p.add_argument("session", help="recorded session directory")
     p.add_argument("--backend", choices=["auto", "rerun", "matplotlib"], default="auto")
     p.set_defaults(func=cmd_replay)
+
+    p = sub.add_parser("live", help="real-time LiDAR BEV in rerun while you drive")
+    p.add_argument("--config", required=True, help="session YAML (must include a lidar)")
+    p.add_argument("--hz", type=float, default=15.0, help="target poll/refresh rate")
+    p.add_argument("--range", type=float, default=None, help="clip points beyond N meters")
+    p.add_argument("--seconds", type=float, default=None, help="auto-stop after N seconds")
+    p.add_argument("--ai", action="store_true", help="let the AI drive instead of you")
+    p.add_argument("--traffic", type=int, default=None,
+                   help="number of traffic vehicles (overrides the config; 0 = none)")
+    p.set_defaults(func=cmd_live)
 
     p = sub.add_parser("doctor", help="check environment and config")
     p.add_argument("--config", help="session YAML to validate")

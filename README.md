@@ -47,9 +47,29 @@ python -m beamng_harness.cli export-nuscenes data/sessions/<name>
 
 `pip install` also creates a `beamng-harness` console script. If its Scripts directory
 is on your PATH, you can use `beamng-harness …` in place of `python -m beamng_harness.cli …`.
-The global `-v/--verbose` flag, if used, must come **before** the subcommand
+The global `-v/--verbose` flag, if used, must come before the subcommand
 (`... cli -v record ...`). Each `record` run prints the output folder name to use as
 `<name>` in steps 3–4 (or pass `--session-name`).
+
+## Live LiDAR BEV (real-time)
+
+Watch the LiDAR as a live bird's-eye view in [rerun](https://rerun.io) while you drive,
+with no capture or disk writes:
+
+```powershell
+python -m beamng_harness.cli live --config configs/session_starter.yaml --hz 15 --range 80
+```
+
+This free-runs the sim (no deterministic stepping), attaches the LiDAR only (cameras
+are skipped to keep the framerate up), and streams a 3D world cloud + ego frame +
+trajectory trail + a 2D top-down BEV panel. You drive in the BeamNG window; press
+`Ctrl+C` in the terminal to stop. Requires `pip install rerun-sdk` and a `lidar` block
+in the config.
+
+Flags: `--ai` lets the AI drive instead of you; `--traffic N` sets the number of other
+vehicles (overrides the config, `0` = none); `--hz` the refresh rate; `--range N` clips
+points beyond N meters; `--seconds N` auto-stops after N seconds. If it's heavy, lower
+`--hz`, tighten `--range`, or reduce the LiDAR `vertical_resolution` in the config.
 
 ## Session format
 
@@ -82,17 +102,6 @@ Rigs are plain YAML — see [`configs/session_starter.yaml`](configs/session_sta
 (nuScenes-matching 6-camera layout whose names map to `CAM_FRONT`, `CAM_FRONT_LEFT`, …
 channels on export). Cameras are pinhole with intrinsics derived from `fov_y_deg`;
 near/far planes, resolution, depth/annotation/instance passes are all per-camera.
-
-## Known limitations (Phase 1 scope)
-
-- Every exported nuScenes frame is a keyframe; single `vehicle.car` category; visibility
-  is ground-truth (no occlusion model). `num_lidar_pts` is set to `-1` (not computed).
-- LiDAR intensity is a placeholder (BeamNG returns geometry only); points are world-space.
-- Depth is returned by BeamNG as an 8-bit buffer normalized over each camera's near/far
-  range (confirmed on BeamNG.tech v0.38.3.0: ~256 levels, coarse at distance). The harness
-  converts it to float32 meters and records the encoding in `metadata.json`. For
-  full-precision geometry, use the LiDAR point cloud.
-- Pinhole cameras only; fisheye/distorted models arrive in Phase 3.
 
 ## Tests
 

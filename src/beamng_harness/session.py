@@ -28,7 +28,7 @@ class HarnessSession:
         self.bng.open(launch=b.launch)
         return self
 
-    def setup_scenario(self) -> None:
+    def setup_scenario(self, deterministic: bool = True) -> None:
         assert self.bng is not None, "call open() first"
         sc = self.cfg.scenario
 
@@ -39,10 +39,12 @@ class HarnessSession:
         )
         self.scenario.make(self.bng)
 
-        # Deterministic physics is the backbone of sensor synchronization: the sim
-        # only advances when we step it, so every poll within a frame shares one
-        # simulation time.
-        self.bng.settings.set_deterministic(self.cfg.capture.steps_per_second)
+        # Deterministic physics is the backbone of sensor synchronization: the sim only advances when we step it, 
+        # so every poll within a frame shares one simulation time.
+        if deterministic:
+            # Deterministic physics underpins synchronized capture (the sim only advances when stepped). 
+            # Live/real-time driving skips it so the world runs at wall-clock speed and you can drive.
+            self.bng.settings.set_deterministic(self.cfg.capture.steps_per_second)
         self.bng.scenario.load(self.scenario)
         self.bng.scenario.start()
 

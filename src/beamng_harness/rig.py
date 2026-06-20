@@ -22,13 +22,13 @@ class SensorRig:
         self.cameras: dict[str, Camera] = {}
         self.lidar: Lidar | None = None
 
-    def attach(self) -> "SensorRig":
+    def attach(self, cameras: bool = True, lidar: bool = True) -> "SensorRig":
         bng, ego = self.session.bng, self.session.ego
         assert bng is not None and ego is not None, "scenario must be set up first"
         rig = self.cfg.rig
         update_time = 1.0 / self.cfg.capture.hz
 
-        for cam in rig.cameras:
+        for cam in (rig.cameras if cameras else []):
             log.info("attaching camera %s (%dx%d, fov_y=%.1f)", cam.name, *cam.resolution, cam.fov_y_deg)
             self.cameras[cam.name] = Camera(
                 cam.name,
@@ -48,7 +48,7 @@ class SensorRig:
                 is_render_instance=cam.render_instance,
             )
 
-        if rig.lidar is not None:
+        if lidar and rig.lidar is not None:
             li = rig.lidar
             log.info("attaching lidar %s (%d channels)", li.name, li.vertical_resolution)
             self.lidar = Lidar(

@@ -78,9 +78,16 @@ def cmd_live(args) -> int:
         print("error: live view requires a 'lidar' block in the rig config")
         return 1
     if not args.ai:
-        cfg.scenario.ai_mode = "manual"  # you drive; --ai hands it to BeamNG's built-in AI
-    if args.traffic is not None:
-        cfg.scenario.traffic = args.traffic  # override the config's traffic count
+        cfg.scenario.ai_mode = "manual"  # you drive, "--ai" hands it to BeamNG's built-in AI
+    if args.traffic is not None:  # override the config's traffic setting
+        if str(args.traffic).lower() == "auto":
+            cfg.scenario.traffic = "auto"
+        else:
+            try:
+                cfg.scenario.traffic = int(args.traffic)
+            except ValueError:
+                print(f"error: --traffic must be a number or 'auto', got {args.traffic!r}")
+                return 1
 
     with HarnessSession(cfg) as session:
         session.setup_scenario(deterministic=False)  # real-time, not stepped
@@ -161,8 +168,9 @@ def main(argv=None) -> int:
     p.add_argument("--range", type=float, default=None, help="clip points beyond N meters")
     p.add_argument("--seconds", type=float, default=None, help="auto-stop after N seconds")
     p.add_argument("--ai", action="store_true", help="let the AI drive instead of you")
-    p.add_argument("--traffic", type=int, default=None,
-                   help="number of traffic vehicles (overrides the config; 0 = none)")
+    p.add_argument("--traffic", nargs="?", const="auto", default=None,
+                   help="traffic override: bare flag = on (auto count), N = N vehicles, "
+                        "0 = none, omitted = config value")
     p.set_defaults(func=cmd_live)
 
     p = sub.add_parser("doctor", help="check environment and config")

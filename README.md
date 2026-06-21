@@ -66,9 +66,11 @@ trajectory trail + a 2D top-down BEV panel. You drive in the BeamNG window; pres
 `Ctrl+C` in the terminal to stop. Requires `pip install rerun-sdk` and a `lidar` block
 in the config.
 
-Flags: `--ai` lets the AI drive instead of you; `--traffic N` sets the number of other
-vehicles (overrides the config, `0` = none); `--hz` the refresh rate; `--range N` clips
-points beyond N meters; `--seconds N` auto-stops after N seconds. If it's heavy, lower
+Flags: `--ai` lets the AI drive instead of you; `--traffic` toggles other vehicles
+(bare flag = on with BeamNG's auto count, `--traffic N` = N vehicles, `--traffic 0` =
+none, omitted = config value); `--hz` the refresh rate; `--range N` clips points beyond
+N meters; `--seconds N` auto-stops after N seconds. You can also set `traffic: auto` in
+the config YAML. If it's heavy, lower
 `--hz`, tighten `--range`, or reduce the LiDAR `vertical_resolution` in the config.
 
 ## Session format

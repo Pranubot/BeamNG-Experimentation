@@ -33,7 +33,7 @@ class HarnessSession:
         sc = self.cfg.scenario
 
         self.scenario = Scenario(sc.level, sc.name)
-        self.ego = Vehicle("ego", model=sc.vehicle_model, license="HARNESS")
+        self.ego = Vehicle("ego", model=sc.vehicle_model, license="PRANU")
         self.scenario.add_vehicle(
             self.ego, pos=tuple(sc.spawn.pos), rot_quat=tuple(sc.spawn.rot_quat)
         )
@@ -42,13 +42,17 @@ class HarnessSession:
         # Deterministic physics is the backbone of sensor synchronization: the sim only advances when we step it, 
         # so every poll within a frame shares one simulation time.
         if deterministic:
-            # Deterministic physics underpins synchronized capture (the sim only advances when stepped). 
+            # Deterministic physics underpins synchronized capture (the sim only advances when stepped)
             # Live/real-time driving skips it so the world runs at wall-clock speed and you can drive.
             self.bng.settings.set_deterministic(self.cfg.capture.steps_per_second)
         self.bng.scenario.load(self.scenario)
         self.bng.scenario.start()
 
-        if sc.traffic > 0:
+        if sc.traffic == "auto":
+            log.info("spawning traffic (BeamNG auto-count)")
+            self.bng.traffic.spawn()  # max_amount=None -> BeamNG decides, like the in-game toggle
+            self._connect_traffic()
+        elif isinstance(sc.traffic, int) and sc.traffic > 0:
             log.info("spawning %d traffic vehicles", sc.traffic)
             self.bng.traffic.spawn(max_amount=sc.traffic)
             self._connect_traffic()

@@ -29,7 +29,7 @@ class ScenarioConfig:
     name: str = "harness_capture"
     vehicle_model: str = "etk800"
     spawn: SpawnConfig = field(default_factory=SpawnConfig)
-    traffic: int = 0
+    traffic: int | str = 0  # 0 = none, N = N vehicles, "auto" = let BeamNG pick
     ai_mode: str = "span"  # span | random | manual | disabled
     ai_speed_kph: float | None = 40.0
 
@@ -115,6 +115,10 @@ def load_config(path: str | Path) -> HarnessConfig:
         rot_quat=_tup(spawn_raw.get("rot_quat", (0, 0, 0, 1)), 4),
     )
     scenario = ScenarioConfig(spawn=spawn, **sc_raw)
+    if isinstance(scenario.traffic, str):
+        if scenario.traffic.lower() != "auto":
+            raise ValueError(f"scenario.traffic must be an int or 'auto', got {scenario.traffic!r}")
+        scenario.traffic = "auto"
 
     rig_raw = dict(raw.get("rig", {}))
     cameras = []
